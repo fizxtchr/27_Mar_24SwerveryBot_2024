@@ -18,9 +18,12 @@ import edu.wpi.first.wpilibj.PS4Controller.Button;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.ClimbDownCommand;
+import frc.robot.commands.ClimbUpCommand;
 import frc.robot.commands.LaunchNote;
 import frc.robot.commands.PrepareLaunch;
 import frc.robot.subsystems.CANLauncher;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -44,6 +47,7 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final CANLauncher m_Launcher = new CANLauncher();
+  private final ClimberSubsystem m_climber = new ClimberSubsystem();
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -86,7 +90,9 @@ public class RobotContainer {
     new Trigger(() -> m_scoringController.getRightY() > .5).whileTrue(m_Launcher.getIntakeCommand());
     var launchSequence = new SequentialCommandGroup(new PrepareLaunch(m_Launcher).withTimeout(kLauncherDelay), new LaunchNote(m_Launcher));
     new Trigger(() -> m_scoringController.getRightY() < -.5).whileTrue(launchSequence);
-  
+
+    m_scoringController.povUp().whileTrue(new ClimbUpCommand(m_climber));
+    m_scoringController.povDown().whileTrue(new ClimbDownCommand(m_climber));
   }
 
   /**

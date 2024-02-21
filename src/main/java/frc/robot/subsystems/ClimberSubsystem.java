@@ -7,16 +7,28 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.kClimberConstants;
 
 public class ClimberSubsystem extends SubsystemBase {
-  CANSparkBase m_climber = new CANSparkMax(18, MotorType.kBrushless);
+  CANSparkBase m_climber = new CANSparkMax(kClimberConstants.kClimberCanId, MotorType.kBrushless);
   /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem() {}
+  public ClimberSubsystem() {
+    m_climber.setIdleMode(IdleMode.kBrake);
+  }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  public void setClimberSpeed(double speed) {
+    m_climber.set(speed);
+  }
+
+  public void stop() {
+    m_climber.set(0);
   }
 }

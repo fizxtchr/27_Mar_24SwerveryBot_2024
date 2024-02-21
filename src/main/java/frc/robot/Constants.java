@@ -170,4 +170,11 @@ public final class Constants {
 
     public static final double kLauncherDelay = 1;
   }
+
+    public static class kClimberConstants{
+      public static final int kClimberCanId = 18;
+      
+      public static final double ClimbDownCommand = .1;
+      public static final double ClimbUpCommand = -.1;
+    }
 }
