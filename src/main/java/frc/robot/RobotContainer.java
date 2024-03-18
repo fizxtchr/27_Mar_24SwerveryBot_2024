@@ -15,14 +15,19 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.ClawDepositCommand;
+import frc.robot.commands.ClawIntakeCommand;
 import frc.robot.commands.ClimbDownCommand;
 import frc.robot.commands.ClimbUpCommand;
 import frc.robot.commands.LaunchNote;
 import frc.robot.commands.PrepareLaunch;
 import frc.robot.subsystems.CANLauncher;
+import frc.robot.subsystems.ClawSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,10 +53,14 @@ public class RobotContainer {
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final CANLauncher m_Launcher = new CANLauncher();
   private final ClimberSubsystem m_climber = new ClimberSubsystem();
+  private final ClawSubsystem m_claw = new ClawSubsystem(); 
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
   CommandXboxController m_scoringController = new CommandXboxController(OIConstants.kScoringControllerPort);
+
+  private SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -70,6 +79,11 @@ public class RobotContainer {
                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                 true, true),
             m_robotDrive));
+
+      m_autoChooser.setDefaultOption("Shoot", this.getShootAuto());
+      m_autoChooser.addOption("Drive", this.getDriveAuto());
+      m_autoChooser.addOption("Shoot then Drive", getShootThenDriveAuto());
+      SmartDashboard.putData(m_autoChooser);
   }
 
   /**
@@ -82,17 +96,32 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    new JoystickButton(m_driverController, Button.kR1.value)
+    new JoystickButton(m_driverController, Button.kL1.value)
         .whileTrue(new RunCommand(
             () -> m_robotDrive.setX(),
             m_robotDrive));
 
+    new JoystickButton(m_driverController, Button.kR1.value)
+        .whileTrue(new RunCommand(
+          () -> m_robotDrive.drive(
+                -MathUtil.applyDeadband(m_driverController.getLeftY()*OIConstants.kDrivingSlowdown, OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getLeftX()*OIConstants.kDrivingSlowdown, OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getRightX()*OIConstants.kDrivingSlowdown, OIConstants.kDriveDeadband),
+                true, true),
+            m_robotDrive));
+
     new Trigger(() -> m_scoringController.getRightY() > .5).whileTrue(m_Launcher.getIntakeCommand());
+
     var launchSequence = new SequentialCommandGroup(new PrepareLaunch(m_Launcher).withTimeout(kLauncherDelay), new LaunchNote(m_Launcher));
     new Trigger(() -> m_scoringController.getRightY() < -.5).whileTrue(launchSequence);
-
     m_scoringController.povUp().whileTrue(new ClimbUpCommand(m_climber));
     m_scoringController.povDown().whileTrue(new ClimbDownCommand(m_climber));
+  
+    new Trigger (() -> m_scoringController.getLeftY() > .5).whileTrue(new ClawDepositCommand(m_claw));
+    new Trigger (() -> m_scoringController.getLeftY() < -.5).whileTrue(new ClawIntakeCommand(m_claw));
+ 
+    //m_scoringController.y().whileTrue(new ClawIntakeCommand(m_claw));
+    //m_scoringController.a().whileTrue(new ClawDepositCommand(m_claw));
   }
 
   /**
@@ -101,6 +130,24 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    return m_autoChooser.getSelected();
+  }
+
+  // Autonomous Command for shooting then driving 
+  public Command getShootThenDriveAuto(){
+    Command shootCommand = getShootAuto();
+    Command driveCommand = getDriveAuto();
+    SequentialCommandGroup SandD = new SequentialCommandGroup(shootCommand, driveCommand);
+    return SandD;
+  }
+
+  public Command getShootAuto() {
+    var launchSequence = new SequentialCommandGroup(new PrepareLaunch(m_Launcher).withTimeout(kLauncherDelay), new LaunchNote(m_Launcher).withTimeout(kLauncherDelay));
+
+    return launchSequence;
+  }
+
+  public Command getDriveAuto() {
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
@@ -113,7 +160,7 @@ public class RobotContainer {
         // Start at the origin facing the +X direction
         new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        List.of(new Translation2d(3, 0)),
         // End 3 meters straight ahead of where we started, facing forward
         new Pose2d(3, 0, new Rotation2d(0)),
         config);

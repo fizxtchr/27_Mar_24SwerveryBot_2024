@@ -108,8 +108,8 @@ public final class Constants {
     public static final double kDrivingI = 0;
     public static final double kDrivingD = 0;
     public static final double kDrivingFF = 1 / kDriveWheelFreeSpeedRps;
-    public static final double kDrivingMinOutput = -1;
-    public static final double kDrivingMaxOutput = 1;
+    public static final double kDrivingMinOutput = -0.8;
+    public static final double kDrivingMaxOutput = 0.8;
 
     public static final double kTurningP = 1;
     public static final double kTurningI = 0;
@@ -129,6 +129,7 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final double kDriveDeadband = 0.05;
     public static final int kScoringControllerPort = 1;
+    public static final double kDrivingSlowdown = 0.5;
   }
 
   public static final class AutoConstants {
@@ -168,13 +169,20 @@ public final class Constants {
     public static final double kIntakeLauncherSpeed = 1;
     public static final double kIntakeFeederSpeed = .2;
 
-    public static final double kLauncherDelay = 1;
+    public static final double kLauncherDelay = .2;
   }
 
     public static class kClimberConstants{
       public static final int kClimberCanId = 18;
       
-      public static final double ClimbDownCommand = .1;
-      public static final double ClimbUpCommand = -.1;
+      public static final double ClimbDownCommand = .3;
+      public static final double ClimbUpCommand = -.3;
     }
-}
+
+    public static class kClawConstants{
+      public static final int kClawCanId = 17;
+
+      public static final double ClawIntakeCommand = .5;
+      public static final double ClawDepositCommand = -1;
+    }
+  }// we change the climb up and down command command 
