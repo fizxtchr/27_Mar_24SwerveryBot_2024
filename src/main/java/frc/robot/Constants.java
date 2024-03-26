@@ -185,4 +185,8 @@ public final class Constants {
       public static final double ClawIntakeCommand = .5;
       public static final double ClawDepositCommand = -1;
     }
+
+    public static class kDashboardKeys {
+      public static final String AUTO_DELAY = "Autonomous Delay";
+    }
   }// we change the climb up and down command command 
