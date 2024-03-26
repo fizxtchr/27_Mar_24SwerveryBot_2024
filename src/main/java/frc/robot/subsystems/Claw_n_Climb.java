@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 // Imports that allow the usage of REV Spark Max motor controllers
 import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -62,18 +63,18 @@ public class Claw_n_Climb extends TimedRobot {
    *
    * Both of the motors used on the KitBot launcher are CIMs which are brushed motors
    */
-  CANSparkBase m_launchWheel = new CANSparkMax(15, MotorType.kBrushless);
-  CANSparkBase m_feedWheel = new CANSparkMax(16, MotorType.kBrushless);
+  CANSparkBase m_launchWheel = new CANSparkFlex(15, MotorType.kBrushless);
+  CANSparkBase m_feedWheel = new CANSparkFlex(16, MotorType.kBrushless);
 
   /**
    * Roller Claw motor controller instance.
   */
-  CANSparkBase m_rollerClaw = new CANSparkMax(17, MotorType.kBrushless);
+  CANSparkBase m_rollerClaw = new CANSparkMax(17, MotorType.kBrushed);
   /**
    * Climber motor controller instance. In the stock Everybot configuration a
    * NEO is used, replace with kBrushed if using a brushed motor.
    */
-  CANSparkBase m_climber = new CANSparkMax(18, MotorType.kBrushless);
+  CANSparkBase m_climber = new CANSparkFlex(18, MotorType.kBrushless);
 
     /**
    * The starter code uses the most generic joystick class.

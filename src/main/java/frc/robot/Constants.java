@@ -104,7 +104,7 @@ public final class Constants {
     public static final double kTurningEncoderPositionPIDMinInput = 0; // radians
     public static final double kTurningEncoderPositionPIDMaxInput = kTurningEncoderPositionFactor; // radians
 
-    public static final double kDrivingP = 0.04;
+    public static final double kDrivingP = 0.1;
     public static final double kDrivingI = 0;
     public static final double kDrivingD = 0;
     public static final double kDrivingFF = 1 / kDriveWheelFreeSpeedRps;
@@ -169,7 +169,7 @@ public final class Constants {
     public static final double kIntakeLauncherSpeed = 1;
     public static final double kIntakeFeederSpeed = .2;
 
-    public static final double kLauncherDelay = .2;
+    public static final double kLauncherDelay = 1;
   }
 
     public static class kClimberConstants{

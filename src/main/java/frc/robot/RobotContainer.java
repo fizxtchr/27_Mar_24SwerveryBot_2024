@@ -31,6 +31,7 @@ import frc.robot.subsystems.ClawSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
@@ -80,9 +81,13 @@ public class RobotContainer {
                 true, true),
             m_robotDrive));
 
-      m_autoChooser.setDefaultOption("Shoot", this.getShootAuto());
-      m_autoChooser.addOption("Drive", this.getDriveAuto());
-      m_autoChooser.addOption("Shoot then Drive", getShootThenDriveAuto());
+      // m_autoChooser.setDefaultOption("Center", this.getShootAuto());
+      m_autoChooser.addOption("Left", this.getDriveAuto(0.394));
+      m_autoChooser.addOption("Center", this.getDriveAuto(0.0));
+      m_autoChooser.addOption("Right", this.getDriveAuto(0.394));
+
+
+      // m_autoChooser.addOption("Shoot then Drive", getShootThenDriveAuto());
       SmartDashboard.putData(m_autoChooser);
   }
 
@@ -96,6 +101,16 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
+    // boolean backActive = m_driverController.getBackButton();
+    // boolean startActive = m_driverController.getStartButton();
+
+    // if ((backActive == true) && (startActive == true)) {
+    //   new InstantCommand(() -> m_robotDrive.zeroHeading());
+    // }
+
+
+    new JoystickButton(m_driverController, XboxController.Button.kY.value).onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+    
     new JoystickButton(m_driverController, Button.kL1.value)
         .whileTrue(new RunCommand(
             () -> m_robotDrive.setX(),
@@ -134,9 +149,9 @@ public class RobotContainer {
   }
 
   // Autonomous Command for shooting then driving 
-  public Command getShootThenDriveAuto(){
+  public Command getShootThenDriveAuto(double startingAngle){
     Command shootCommand = getShootAuto();
-    Command driveCommand = getDriveAuto();
+    Command driveCommand = getDriveAuto(startingAngle);
     SequentialCommandGroup SandD = new SequentialCommandGroup(shootCommand, driveCommand);
     return SandD;
   }
@@ -147,7 +162,7 @@ public class RobotContainer {
     return launchSequence;
   }
 
-  public Command getDriveAuto() {
+  public Command getDriveAuto(double startingAngle) {
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
@@ -158,11 +173,11 @@ public class RobotContainer {
     // An example trajectory to follow. All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(0, 0, new Rotation2d(0)),
+        new Pose2d(0, 0, new Rotation2d(startingAngle)),
         // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(3, 0)),
-        // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, new Rotation2d(0)),
+        List.of(new Translation2d(0.05, 0)),
+        // End 2 meters straight ahead of where we started, facing forward
+        new Pose2d(2, 0, new Rotation2d(0)),
         config);
 
     var thetaController = new ProfiledPIDController(
@@ -182,9 +197,11 @@ public class RobotContainer {
         m_robotDrive);
 
     // Reset odometry to the starting pose of the trajectory.
+    //m_robotDrive.zeroHeading();
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
     return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false));
+    //return new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, true));
   }
 }
